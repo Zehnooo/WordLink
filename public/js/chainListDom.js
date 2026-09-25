@@ -3,12 +3,9 @@ import icons from './icons.js';
 import { loadData } from './data.js';
 
 export const chainListView = () => {
-    const mainCon = newEl('div', null, 'chain-list-content', ['view-content']);
-    const header = chainListHeader();
-    const table = chainListTable();
-
-    mainCon.append(header, table);
-    return mainCon;
+    const el = newEl('div', null, 'chain-list-content', ['view-content']);
+    el.append(chainListHeader(), chainListTable());
+    return { success: true, message: 'Chain List View built', view: 'chain-list', el: el, loadableContent: true };
 }
 
 const chainListHeader = () => {
@@ -56,7 +53,6 @@ const chainListTable = () => {
 
 const chainListTableItem = (listItem) => {
     const itemStatus = listItem.verified ? 'verified' : 'unverified';
-    const simpleName = listItem.name.replace(' ', '-').toLowerCase();
 
     const row = newEl('div', null, `row-${listItem.id}`);
     const con = newEl('div', null, null, ['fx', 'ac', 'w', 'gp1']);
@@ -64,9 +60,10 @@ const chainListTableItem = (listItem) => {
     const verified = newEl('span', null, null, [itemStatus]);
     const number = newEl('span', String(listItem.id) ?? 'null');
     const name = newEl('p', listItem.name ?? '--');
-    const wordCount = newEl('span', `${listItem.words.length} / 5` ?? 'null / 5');
-    const editBtn = newEl('button', null, `${simpleName}-edit`);
+    const wordCount = newEl('span', `${listItem.words.length ?? null} / 5`);
+    const editBtn = newEl('button', null, `${listItem.id}-edit`);
     editBtn.innerHTML = icons.buttons.edit + 'Edit';
+    editBtn.addEventListener('click', () => { console.log(`Edit: ${listItem.id ?? null} - ${listItem.name ?? null}`); });
 
     con.append(verified, number, name, wordCount, editBtn);
     row.append(con);
