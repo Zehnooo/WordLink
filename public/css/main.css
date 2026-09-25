@@ -65,9 +65,6 @@ body {
 .pa { position: absolute; }
 
 nav ul { list-style-type: none; margin: 0; }
-nav ul li svg { max-width: 36px; width: 100%; height: auto; margin: 0;}
+nav ul li svg { max-width: 36px; margin: 0;}
 
-.btn > * {
-    max-height: 50px;
-    margin: 0;
-}
+.bgt { background: transparent; }
