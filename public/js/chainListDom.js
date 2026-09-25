@@ -70,10 +70,15 @@ const chainListTableItem = (listItem) => {
 }
 
 export const populateChainListTable = async () => {
-    const lists = await loadData();
-    if (!lists || !lists.length) { return { success: false, message: 'Error loading lists. No lists found.' }; }
     const table = document.querySelector('#list-data');
     if (!table) { return { success: false, message: 'Error, could not find list table.' }; }
+    table.replaceChildren();
+
+    const lists = await loadData();
+    if (!lists || !lists.length) {
+        table.append(newEl('div', 'No lists found.'));
+        return { success: false, message: 'Error loading lists. No lists found.' }; }
+
     lists.forEach(item => table.append(chainListTableItem(item)));
     return { success: true, message: `Table populated with ${lists.length} lists` };
 }

@@ -5,17 +5,14 @@ export const changeScreen =  (screen) => {
     const screenEl = document.querySelector(`#${screen}`);
     if (!screenEl) { return { success: false, message: `Unknown screen: ${screen}` }; }
     document.querySelectorAll('.screen').forEach(screen => screen.setAttribute("hidden", "hidden"));
+
     const res = showContent(screenEl.id);
+    if (!res.success) return { success: false, message: res.message }
     screenEl.removeAttribute("hidden");
 
-    if (res.loadableContent){
-        setTimeout(() => {
-        loadContent[screen]();
-        document.querySelector('#placeholder').remove();
-        }, 2000);
-    }
+    if (res.loadableContent && Object.hasOwn(loadContent, screen)){ loadContent[screen](); }
 
-    return { success: true, message: `Screen changed to ${screen}`, screen: screen, loadableContent: res.loadableContent }
+    return { success: true, message: `Screen changed to ${screen}`, screen }
 }
 
 const showContent = (screenId) => {
