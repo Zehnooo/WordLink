@@ -10,11 +10,6 @@ export const setNavIcons = () => {
 
 export const setNavButtons = () => {
     document.querySelectorAll('nav>ul>li>button').forEach(navBtn => {
-        navBtn.addEventListener('click', async () => {
-            const res= changeScreen(navBtn.dataset.screen);
-            if (!res.loadableContent) return;
-            document.querySelector('#placeholder').remove();
-            await loadContent[res.screen]();
-        });
+        navBtn.addEventListener('click',  () => { changeScreen(navBtn.dataset.screen); });
     });
 }

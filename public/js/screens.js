@@ -6,7 +6,15 @@ export const changeScreen =  (screen) => {
     if (!screenEl) { return { success: false, message: `Unknown screen: ${screen}` }; }
     document.querySelectorAll('.screen').forEach(screen => screen.setAttribute("hidden", "hidden"));
     const res = showContent(screenEl.id);
-    if (res.success){ screenEl.removeAttribute("hidden"); }
+    screenEl.removeAttribute("hidden");
+
+    if (res.loadableContent){
+        setTimeout(() => {
+        loadContent[screen]();
+        document.querySelector('#placeholder').remove();
+        }, 2000);
+    }
+
     return { success: true, message: `Screen changed to ${screen}`, screen: screen, loadableContent: res.loadableContent }
 }
 
@@ -30,13 +38,3 @@ const screenContent = {
 export const loadContent = {
     'chain-list-screen': populateChainListTable,
 }
-
-/*
-if (screen.loadableContent) {
-        if (Object.hasOwn(loadContent, screenId)) {
-            const load = await loadContent[screenId]();
-            if (!load.success){ console.error(load.message); }
-            document.querySelector('#placeholder').remove();
-        }
-    }
- */
