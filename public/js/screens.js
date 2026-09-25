@@ -1,9 +1,10 @@
 import { chainListView, errorView } from "./dom.js";
 
 export const changeScreen = (screen) => {
-    document.querySelectorAll('.screen').forEach(screen => screen.setAttribute("hidden", "hidden"));
     const screenEl = document.querySelector(`#${screen}`);
     if (!screenEl) { console.error(`Unknown screen: ${screen}`); return; }
+
+    document.querySelectorAll('.screen').forEach(screen => screen.setAttribute("hidden", "hidden"));
     showContent(screenEl.id);
     screenEl.removeAttribute("hidden");
 }
