@@ -35,18 +35,17 @@ const chainListHeader = () => {
 const chainListTable = () => {
     const con = newEl('div');
     const filterCon = newEl('div', null, 'filters', ['fx', 'p1', 'gp1']);
-    let filter = 'All';
     ['ALL', 'VERIFIED', 'DRAFTS'].forEach(type => {
         const cleanName = type.toLowerCase();
         const b = newEl('button', type, `filter-${cleanName}`, ['p04']);
         b.type = 'button';
         b.dataset.filter = cleanName;
-        filter = type;
+        b.addEventListener('click', () => { console.log('Filter', type); });
+        filterCon.append(b);
     });
     const listRoot = newEl('div', null, 'list-data');
     listRoot.append(newEl('div', 'Loading lists...', 'placeholder'));
 
-    filterCon.append(filter);
     con.append(filterCon, listRoot);
     return con;
 }
