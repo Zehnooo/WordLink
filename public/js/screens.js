@@ -13,17 +13,20 @@ export const changeScreen = async (screen) => {
 const showContent = async (screenId) => {
     const contentDiv = document.querySelector(`#${screenId}-content`);
     if (!contentDiv) { return { success: false, message: `Content Div for ${screenId} was not found.`}; }
-    const screen = screenContent[screenId] ??  screenContent['error-screen'];
-    const result = await screen();
-    console.log(result);
-    if (result.success) { contentDiv.replaceChildren(result.el); }
-    if (result.loadableContent) {
+
+    const screen = (screenContent[screenId] ?? screenContent['error-screen'])();
+
+    if (!screen.success) { return { success: false, message: screen.message }; }
+    if (screen.success) { contentDiv.replaceChildren(screen.el); }
+    if (screen.loadableContent) {
         if (Object.hasOwn(loadContent, screenId)) {
             const load = await loadContent[screenId]();
             if (!load.success){ console.error(load.message); }
             document.querySelector('#placeholder').remove();
         }
     }
+
+
     return { success: true, message: `Content for ${screenId} built.` }
 }
 
