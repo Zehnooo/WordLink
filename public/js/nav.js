@@ -1,5 +1,5 @@
 import icons from './icons.js';
-import { changeScreen } from "./screens.js";
+import {changeScreen, loadContent} from "./screens.js";
 
 export const setNavIcons = () => {
     document.querySelectorAll('.icon').forEach(navBtn => {
@@ -10,6 +10,11 @@ export const setNavIcons = () => {
 
 export const setNavButtons = () => {
     document.querySelectorAll('nav>ul>li>button').forEach(navBtn => {
-        navBtn.addEventListener('click', () => { changeScreen(navBtn.dataset.screen); });
+        navBtn.addEventListener('click', async () => {
+            const res= changeScreen(navBtn.dataset.screen);
+            if (!res.loadableContent) return;
+            document.querySelector('#placeholder').remove();
+            await loadContent[res.screen]();
+        });
     });
 }
