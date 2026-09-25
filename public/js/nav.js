@@ -3,7 +3,6 @@ import { changeScreen } from "./screens.js";
 
 export const setNavIcons = () => {
     document.querySelectorAll('.icon').forEach(navBtn => {
-        console.log(navBtn);
         let id = navBtn.id.replace('-icon', '').replace('-list', '');
         navBtn.innerHTML = icons.nav[id];
     });

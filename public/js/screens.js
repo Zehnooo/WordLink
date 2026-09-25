@@ -9,10 +9,9 @@ export const changeScreen = (screen) => {
 
 const showContent = (screenId) => {
     const contentDiv = document.querySelector(`#${screenId}-content`);
-    let render = screenContent[screenId];
-    if (!contentDiv || !render) render = screenContent['error-screen'];
-    contentDiv.replaceChildren();
-    contentDiv.append(render());
+    if (!contentDiv) { console.error(`Content Div for ${screenId} was not found.`); return; }
+    const render = screenContent[screenId] ?? screenContent['error-screen'];
+    contentDiv.replaceChildren(render());
 }
 
 const screenContent = {
