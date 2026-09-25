@@ -1,8 +1,5 @@
 
-export const hideScreens = () => {
+export const changeScreen = (screen) => {
     document.querySelectorAll('.screen').forEach(screen => screen.setAttribute("hidden", "hidden"));
-}
-
-export const switchScreen = (screen) => {
     document.querySelector(`#${screen}`).removeAttribute("hidden");
 }
