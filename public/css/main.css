@@ -1,3 +1,69 @@
 body {
-    background: pink;
+    width: 100%;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: 1fr 3fr;
 }
+
+.w { width: 100%; }
+.wa  { width: auto; }
+
+.h { height: 100%; }
+.ha { height: auto; }
+
+.fx { display: flex; }
+.ifx { display: inline-flex; }
+.fww { flex-wrap: wrap; }
+.fdc { flex-direction: column; }
+.fdr { flex-direction: row; }
+
+.ac { align-items: center; }
+
+.start { justify-content: flex-start; }
+.center { justify-content: center; }
+.even { justify-content: space-evenly; }
+
+.gp04 { gap: .4rem; }
+.gp06 { gap: .6rem; }
+.gp08 { gap: .8rem; }
+.gp1 { gap: 1rem; }
+.gp2 { gap: 2rem; }
+
+.p0 { padding: 0; }
+.p04 { padding: .4rem; }
+.p06 { padding: .6rem; }
+.p08 { padding: .8rem; }
+.p1 { padding: 1rem; }
+.p2 { padding: 2rem; }
+
+.br04 { border-radius: .4rem; }
+.br06 { border-radius: .6rem; }
+.br08 { border-radius: .8rem; }
+.br1 { border-radius: 1rem; }
+.br2 { border-radius: 2rem; }
+.br50 { border-radius: 50%; }
+
+.fw300 { font-weight: 300; }
+.fw400 { font-weight: 400; }
+.fw500 { font-weight: 500; }
+.fw600 { font-weight: 600; }
+.fw700 { font-weight: 700; }
+.fw800 { font-weight: 800; }
+
+.fs100 { font-size: .75rem; }
+.fs200 { font-size: .875rem; }
+.fs300 { font-size: 1rem; }
+.fs400 { font-size: 1.25rem; }
+.fs500 { font-size: 1.5rem; }
+.fs600 { font-size: 2rem; }
+.fs700 { font-size: 2.5rem; }
+.fs800 { font-size: 3rem; }
+.fs900 { font-size: 3.5rem; }
+.fs1000 { font-size: 4rem; }
+
+.pr { position: relative; }
+.pa { position: absolute; }
+
+nav ul { list-style-type: none; margin: 0; }
+nav ul li svg { max-width: 36px; width: 100%; height: auto; margin: 0;}
