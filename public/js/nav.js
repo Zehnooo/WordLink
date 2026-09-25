@@ -1,0 +1,18 @@
+import icons from './icons.js';
+import { hideScreens, switchScreen } from "./screens.js";
+
+export const setNavIcons = () => {
+    document.querySelectorAll('nav>ul>li>button>svg').forEach(navBtn => {
+        let id = navBtn.id.replace('-icon', '').replace('-list', '');
+        navBtn.innerHTML = icons.nav[id];
+    });
+}
+
+export const setNavButtons = () => {
+    document.querySelectorAll('nav>ul>li>button').forEach(navBtn => {
+        navBtn.addEventListener('click', () => {
+            hideScreens();
+            switchScreen(navBtn.dataset.screen);
+        });
+    });
+}

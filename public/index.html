@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<nav>
+    <div class="nav-header"><h4>WordLink</h4></div>
+    <ul>
+        <li><button data-screen="home-screen"><svg id="home-icon"></svg><span>HOME</span></button></li>
+        <li><button data-screen="chain-list-screen"><svg id="chain-list-icon"></svg><span>LISTS</span></button></li>
+        <li><button data-screen="lobby-list-screen"><svg id="lobby-list-icon"></svg><span>LOBBIES</span></button></li>
+        <li><button data-screen="profile-screen"><svg id="profile-icon"></svg><span>PROFILE</span></button></li>
+    </ul>
+</nav>
+<section id="home-screen" class="screen"><h1>Home</h1></section>
+<section id="chain-list-screen" class="screen" hidden><h1>Chain Lists</h1></section>
+<section id="lobby-list-screen" class="screen" hidden><h1>Lobbies</h1></section>
+<section id="profile-screen" class="screen" hidden><h1>Profile</h1></section>
+<section id="lobby-screen" class="screen" hidden><h1>Pre-Game Lobby</h1></section>
+<section id="game-screen" class="screen" hidden><h1>Live Game</h1></section>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
