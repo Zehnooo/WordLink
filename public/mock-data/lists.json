@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "Classic Chain",
+    "words": ["Watch", "Dog", "Water", "Bottle", "Brush"],
+    "verified": true
+  },
+  {
+    "id": 2,
+    "name": "Game Night",
+    "words": ["Hot", "Dog", "House", "Party", "Time"],
+    "verified": true
+  },
+  {
+    "id": 3,
+    "name": "",
+    "words": ["Coffee"],
+    "verified": false
+  },
+  {
+    "id": 4,
+    "name": "Road Trip",
+    "words": ["Fire", "Truck", "Stop", "Sign"],
+    "verified": false
+  },
+  {
+    "id": null,
+    "name": "Dessert Chain",
+    "words": ["Ice", "Cream", "Cheese", "Cake", "Walk"],
+    "verified": false
+  }
+]
