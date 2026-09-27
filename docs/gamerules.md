@@ -4,14 +4,18 @@
 WATCH → ???? → ???? → ???? → ????
 
 ## Valid Chain
-A valid chain has 5 words in which each word pair connects
+A valid chain has 5 words in which each ordered word pair forms a recognizable phrase or compound word. Loose associations and slang-only connections do not qualify.
 
-Chain = [Watch, Dog, Water, Bottle, Brush]
+Players create their own chains. Before play, the game checks their format and any existing admin bans. A new connection does not require advance admin approval. Passing these checks means a chain is ready to play, not that all its connections have been verified.
 
-WATCH + DOG<br>
-DOG + WATER<br>
-WATER + BOTTLE<br> 
-BOTTLE + BRUSH<br>
+Players may report unfair chains for admin review. The report preserves the exact chain used in the match. Admin decisions are stored to block known disallowed content in future games. Reports alone do not automatically ban a chain or change a match result. When an admin disallows an ordered word pair, that pair is blocked in every chain, including existing saved chains before their next use. Reversing the order is a different pair. Report timing and result-correction policy remain proposals in `development-plan.md`.
+
+Chain = [Ice, Cream, Cheese, Cake, Walk]
+
+ICE + CREAM<br>
+CREAM + CHEESE<br>
+CHEESE + CAKE (cheesecake)<br>
+CAKE + WALK (cakewalk)<br>
 
 ## Scoring / Deciding Winner
 
@@ -29,7 +33,7 @@ If both players cannot guess the full word chain, a draw can be agreed upon. The
 Upon creating a room and joining, there will be no timer until a second player joins. 
 
 ### Players
-Users cannot join a room nor participate in a game until they have at least one saved <i>VERIFIED</i> list to use<br>
+Users cannot join a room nor participate in a game until they have at least one saved <i>READY</i> list (complete and not blocked by an existing admin decision) to use<br>
 Host Leaves (Pre-Game): Lobby is closed, remaining players are removed<br>
 Non-Host Leaves (Pre-Game): Active timers are dropped, lobby is reopened and waiting for a second player.<br>
 Player Leaves (Live-Game): Handle later, typically whoever leaves is granted a loss<br>

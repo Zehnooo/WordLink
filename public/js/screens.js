@@ -4,10 +4,12 @@ import { chainListView, populateChainListTable } from './chainListDom.js';
 export const changeScreen =  (screen) => {
     const screenEl = document.querySelector(`#${screen}`);
     if (!screenEl) { return { success: false, message: `Unknown screen: ${screen}` }; }
-    document.querySelectorAll('.screen').forEach(screen => screen.setAttribute("hidden", "hidden"));
+
 
     const res = showContent(screenEl.id);
-    if (!res.success) return { success: false, message: res.message }
+    if (!res.success) return { success: false, message: res.message };
+
+    document.querySelectorAll('.screen').forEach(screen => screen.setAttribute("hidden", "hidden"));
     screenEl.removeAttribute("hidden");
 
     if (res.loadableContent && Object.hasOwn(loadContent, screen)){ loadContent[screen](); }

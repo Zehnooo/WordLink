@@ -56,15 +56,15 @@ const chainListTableItem = (listItem) => {
     const row = newEl('div', null, `row-${listItem.id}`);
     const con = newEl('div', null, null, ['fx', 'ac', 'w', 'gp1']);
 
-    const verified = newEl('span', null, null, [itemStatus]);
-    const number = newEl('span', String(listItem.id) ?? 'null');
+    const verified = newEl('div', null, null, [itemStatus, 'list-status']);
+    const number = newEl('span', String(listItem.id ?? '--'));
     const name = newEl('p', listItem.name ?? '--');
-    const wordCount = newEl('span', `${listItem.words.length ?? null} / 5`);
+    const wordCount = newEl('span', `${listItem.words?.length ?? 0} / 5`);
     const editBtn = newEl('button', null, `${listItem.id}-edit`);
     editBtn.innerHTML = icons.buttons.edit + 'Edit';
     editBtn.addEventListener('click', () => { console.log(`Edit: ${listItem.id ?? null} - ${listItem.name ?? null}`); });
 
-    con.append(verified, number, name, wordCount, editBtn);
+    con.append(number, name, wordCount, verified, editBtn);
     row.append(con);
     return row;
 }
@@ -72,13 +72,13 @@ const chainListTableItem = (listItem) => {
 export const populateChainListTable = async () => {
     const table = document.querySelector('#list-data');
     if (!table) { return { success: false, message: 'Error, could not find list table.' }; }
-    table.replaceChildren();
 
     const lists = await loadData();
     if (!lists || !lists.length) {
-        table.append(newEl('div', 'No lists found.'));
+        table.replaceChildren(newEl('div', 'No lists found.'));
         return { success: false, message: 'Error loading lists. No lists found.' }; }
 
+    table.replaceChildren();
     lists.forEach(item => table.append(chainListTableItem(item)));
     return { success: true, message: `Table populated with ${lists.length} lists` };
 }

@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WordLink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/main.css">
 </head>
@@ -11,11 +14,16 @@
 <nav class="fx w ac">
     <div class="nav-header"><h2>WordLink</h2></div>
     <ul class="fx w ha gp1">
-        <li class="wa ha"><button class="ifx p04 gp04 wa ha btn ac br04 bgt" data-screen="home-screen"><span id="home-icon" class="icon w ha"></span><span>HOME</span></button></li>
-        <li class="wa"><button class="ifx p04 gp04 wa ha btn ac br04 bgt" data-screen="chain-list-screen"><span id="chain-list-icon" class="icon w ha"></span><span>LISTS</span></button></li>
-        <li class="wa"><button class="ifx p04 gp04 wa ha btn ac br04 bgt" data-screen="lobby-list-screen"><span id="lobby-list-icon" class="icon w ha"></span><span>LOBBIES</span></button></li>
-        <li class="wa"><button class="ifx p04 gp04 wa ha btn ac br04 bgt" data-screen="profile-screen"><span id="profile-icon" class="icon w ha"></span><span>PROFILE</span></button></li>
+        <li class="wa ha"><button class="ifx gp04 wa ha btn ac br04 bgt brt" data-screen="home-screen"><span id="home-icon" class="icon w ha"></span><span>HOME</span></button></li>
+        <li class="wa"><button class="ifx gp04 wa ha btn ac br04 bgt brt" data-screen="chain-list-screen"><span id="chain-list-icon" class="icon w ha"></span><span>LISTS</span></button></li>
+        <li class="wa"><button class="ifx gp04 wa ha btn ac br04 bgt brt" data-screen="lobby-list-screen"><span id="lobby-list-icon" class="icon w ha"></span><span>LOBBIES</span></button></li>
+        <li class="wa"><button class="ifx gp04 wa ha btn ac br04 bgt brt" data-screen="profile-screen"><span id="profile-icon" class="icon w ha"></span><span>PROFILE</span></button></li>
     </ul>
+        <div class="fx w ha gp1 ac">
+            <button class="ifx gp04 wa ha btn ac br04 bgt brt">Sign Up</button>
+            <span class="divider"></span>
+            <button class="ifx gp04 wa ha btn ac br04 bgt brt">Log In</button>
+        </div>
 </nav>
 <main>
     <section id="home-screen" class="screen"><div id="home-screen-content"></div></section>
