@@ -1,5 +1,5 @@
 import icons from './icons.js';
-import {changeScreen, loadContent} from "./screens.js";
+import { changeScreen } from "./screens.js";
 
 export const setNavIcons = () => {
     document.querySelectorAll('.icon').forEach(navBtn => {
