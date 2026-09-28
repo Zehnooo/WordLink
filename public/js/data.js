@@ -1,8 +1,9 @@
 
+// list data './mock-data/lists.json'
 
-export const loadData = async () => {
+export const loadData = async (reference) => {
     try {
-        const res = await fetch('./mock-data/lists.json');
+        const res = await fetch(reference);
         if (!res.ok) throw new Error(`Failed to load data: ${res.status}`);
         const data = await res.json();
         if (!data) console.error('failed to load data');
