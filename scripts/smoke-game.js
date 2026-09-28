@@ -18,11 +18,5 @@ const players = {
 }
 
 const gm = new GameManager();
-const game1 = gm.createGame(bob.id, players, 120);
-console.log(JSON.stringify({
-    hostId: bob.id,
-    players: game1.getPlayers(),
-    code: game1.getRoomCode(),
-    phase: game1.getPhase()
-}, null, 2));
+const game1 = gm.createGame(players, 120);
 
