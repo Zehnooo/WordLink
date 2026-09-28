@@ -1,6 +1,7 @@
 import { newEl } from './dom.js';
 import icons from './icons.js';
 import { loadData } from './data.js';
+import { List } from './List.js';
 
 export const chainListView = () => {
     const el = newEl('div', null, 'chain-list-content', ['view-content']);
@@ -57,14 +58,13 @@ const chainListTableItem = (listItem) => {
     const con = newEl('div', null, null, ['fx', 'ac', 'w', 'gp1']);
 
     const verified = newEl('div', null, null, [itemStatus, 'list-status']);
-    const number = newEl('span', String(listItem.id ?? '--'));
-    const name = newEl('p', listItem.name ?? '--');
+    const name = newEl('p', listItem.title ?? '--');
     const wordCount = newEl('span', `${listItem.words?.length ?? 0} / 5`);
     const editBtn = newEl('button', null, `${listItem.id}-edit`);
     editBtn.innerHTML = icons.buttons.edit + 'Edit';
-    editBtn.addEventListener('click', () => { console.log(`Edit: ${listItem.id ?? null} - ${listItem.name ?? null}`); });
+    editBtn.addEventListener('click', () => { console.log(`Edit: ${listItem.id ?? null} - ${listItem.title ?? null}`); });
 
-    con.append(number, name, wordCount, verified, editBtn);
+    con.append(name, wordCount, verified, editBtn);
     row.append(con);
     return row;
 }
@@ -73,12 +73,14 @@ export const populateChainListTable = async () => {
     const table = document.querySelector('#list-data');
     if (!table) { return { success: false, message: 'Error, could not find list table.' }; }
 
-    const lists = await loadData();
+    const data = await loadData('./mock-data/lists.json');
+    const lists = [];
+    data.forEach(item => lists.push(new List(item.name, item.words)));
     if (!lists || !lists.length) {
         table.replaceChildren(newEl('div', 'No lists found.'));
         return { success: false, message: 'Error loading lists. No lists found.' }; }
 
     table.replaceChildren();
     lists.forEach(item => table.append(chainListTableItem(item)));
-    return { success: true, message: `Table populated with ${lists.length} lists` };
+    return { success: true, message: `Table populated with ${lists.length} lists`, result: lists };
 }
