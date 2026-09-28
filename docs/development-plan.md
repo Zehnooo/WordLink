@@ -8,16 +8,54 @@ This is the only document to follow in order. Work on one step, pass its **Check
 
 The application is yours to implement. This guide tells you what to build and how to check it; it does not mark features complete on your behalf. Update this “next task” pointer only after checking the work.
 
+
+### Project path convention
+
+Every project path in this guide is written from the **project root**: the folder that contains `package.json`.
+
+The intended top-level layout is:
+
+```text
+<project-root>/
+├─ package.json
+├─ server/
+│  ├─ server.js
+│  ├─ game/
+│  ├─ auth/
+│  ├─ repositories/
+│  ├─ services/
+│  ├─ routes/
+│  └─ socket/
+├─ public/
+│  ├─ js/
+│  └─ css/
+├─ scripts/
+├─ tests/
+├─ .github/
+└─ docs/ (project/support documentation as added later)
+```
+
+So, for example:
+
+- `<project-root>/scripts/smoke-game.js` means `scripts/` is directly inside the project root — **not** inside `public/` or `server/`.
+- `<project-root>/server/...` is server-only code. Core room/game classes live under `<project-root>/server/game/`.
+- `<project-root>/public/...` is browser-served code. Browser JavaScript lives under `<project-root>/public/js/`; CSS lives under `<project-root>/public/css/`.
+- `<project-root>/tests/...` is automated test code.
+- `<project-root>/.github/...` is repository/CI configuration.
+
+If a later step introduces a new subdirectory, that step names its full location from `<project-root>`.
+
+
 ### When to use another document
 
 | Document | When to open it |
 | --- | --- |
 | **This plan** | Start every coding session here. It determines the order. |
-| `architecture.md` | Only when a step links to a specific definition, such as what a Game contains. It is a reference, not another checklist to follow. |
-| `testing-and-operations.md` | Only when a step links to a test setup, troubleshooting entry, or deployment checklist. |
-| `gamerules.md` | When you need to confirm a player-facing rule. Read it once at Step 5. |
+| `<project-root>/architecture.md` | Only when a step links to a specific definition, such as what a Game contains. It is a reference, not another checklist to follow. |
+| `<project-root>/testing-and-operations.md` | Only when a step links to a test setup, troubleshooting entry, or deployment checklist. |
+| `<project-root>/gamerules.md` | When you need to confirm a player-facing rule. Read it once at Step 5. |
 
-You do not need to read all four documents before starting. Detailed design choices are preserved in the references so this guide can stay focused.
+You do not need to read all four documents before starting. All Markdown links to `architecture.md`, `testing-and-operations.md`, or `gamerules.md` refer to those files directly in `<project-root>/`. Detailed design choices are preserved in the references so this guide can stay focused.
 
 ### Where this takes you
 
@@ -32,13 +70,13 @@ You do not need to read all four documents before starting. Detailed design choi
 
 ## Step 1: make the server imports consistent
 
-**Work in:** `package.json`, `server/server.js`.
+**Work in:** `<project-root>/package.json` and `<project-root>/server/server.js`.
 
-Your browser-side GameManager import is already removed. The remaining setup problem is that `server.js` uses `require`, while `Game.js` and `GameManager.js` use `import`/`export`.
+Your browser-side GameManager import is already removed. The remaining setup problem is that `<project-root>/server/server.js` uses `require`, while `<project-root>/server/game/Game.js` and `<project-root>/server/game/GameManager.js` use `import`/`export`.
 
-1. Add `"type": "module"` to `package.json`.
-2. In the same change, convert the `require` statements in `server.js` to `import` statements.
-3. Replace its use of CommonJS `__dirname` with a directory derived from `fileURLToPath(import.meta.url)` and `path.dirname`. Keep serving only `public/`.
+1. Add `"type": "module"` to `<project-root>/package.json`.
+2. In the same change, convert the `require` statements in `<project-root>/server/server.js` to `import` statements.
+3. Replace its use of CommonJS `__dirname` with a directory derived from `fileURLToPath(import.meta.url)` and `path.dirname`. Keep serving only `<project-root>/public/`.
 4. Keep the existing `npm start` command and `/health` endpoint working.
 
 The server imports and directory setup should use this pattern:
@@ -51,34 +89,34 @@ import { fileURLToPath } from 'node:url';
 const serverDirectory = path.dirname(fileURLToPath(import.meta.url));
 ```
 
-Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
+Here, `serverDirectory` resolves to `<project-root>/server/`. Use `path.join(serverDirectory, '../public')` in the existing static-file setup; that path resolves to `<project-root>/public/`.
 
-**Check:** run `npm start`, then open `http://localhost:3000/health`. It should return `{ "status": "ok" }` without module errors. Stop the server with Ctrl+C.
+**Check:** from `<project-root>`, run `npm start`, then open `http://localhost:3000/health`. It should return `{ "status": "ok" }` without module errors. Stop the server with Ctrl+C.
 
 **Then:** Step 2. Do not install Socket.IO or set up Supabase yet.
 
 ## Step 2: give yourself a terminal experiment
 
-**Work in:** new `scripts/smoke-game.js`; `Game.js` and `GameManager.js` only to align their arguments.
+**Work in:** new `<project-root>/scripts/smoke-game.js`; `<project-root>/server/game/Game.js` and `<project-root>/server/game/GameManager.js` only to align their arguments.
 
-1. Move class experiments into this script. Import the server manager, create a game, retrieve it, and print it. The browser is not involved.
+1. Move class experiments into `<project-root>/scripts/smoke-game.js`. Import the server manager, create a game, retrieve it, and print it. The browser is not involved.
 2. Supply a fixed test `hostId`. It represents the person creating the game; it is required even before real accounts exist.
 3. Make the data passed by `createGame` match what `Game` expects. Your current constructor calls its third argument `roomPlayers` and reads `roomPlayers.lists`, but the manager calls the argument `playerLists`. Agree on one shape and pass it consistently; include a `lists` field for the current constructor.
-4. Keep fake players/chains inside the script or private test fixtures, not production browser files.
+4. Keep fake players/chains inside `<project-root>/scripts/smoke-game.js` or private fixtures under `<project-root>/tests/fixtures/`, not production browser files under `<project-root>/public/`.
 
-**Check:** run `node scripts/smoke-game.js`. Verify host ID, room code, initial phase, player/list data, and that lookup returns the game you created. This checks construction, not multiplayer yet.
+**Check:** from `<project-root>`, run `node scripts/smoke-game.js`. Verify host ID, room code, initial phase, player/list data, and that lookup returns the game you created. This checks construction, not multiplayer yet.
 
 **Then:** Step 3. Keep updating this script as the classes evolve.
 
 ## Step 3: turn those checks into repeatable tests
 
-**Work in:** `GameManager.js`, `Game.js`, `package.json`; new `tests/unit/GameManager.test.js`, `.nvmrc`, and `eslint.config.js`.
+**Work in:** `<project-root>/server/game/GameManager.js`, `<project-root>/server/game/Game.js`, and `<project-root>/package.json`; new `<project-root>/tests/unit/GameManager.test.js`, `<project-root>/.nvmrc`, and `<project-root>/eslint.config.js`.
 
 1. Export the manager class and create an instance in the smoke script. Each test gets its own instance so games cannot leak between tests.
 2. Use Node's built-in `node:test` and `node:assert/strict`. Test creation, required host ID, lookup, and deletion.
 3. Fix code generation with a bounded loop that assigns a new candidate on each collision. Your current recursive call discards its result and can return an empty code.
 4. Allow tests to supply a predictable code generator. Test collision-then-success and repeated-collision failure.
-5. Initially set npm's `test` script to `node --test tests/unit/GameManager.test.js`; expand it as you add tests. Set up the supported runtime and lint configuration described in the linked tooling reference.
+5. Initially set npm's `test` script in `<project-root>/package.json` to `node --test tests/unit/GameManager.test.js`; because npm runs this from `<project-root>`, that command targets `<project-root>/tests/unit/GameManager.test.js`; expand it as you add tests. Set up the supported runtime and lint configuration described in the linked tooling reference.
 
 **Check:** `npm test` passes. Deliberately break an assertion once and verify it fails. Restore it; rerun the smoke script.
 
@@ -86,12 +124,12 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 4: decide what a room and a game each own
 
-**Work in:** `Game.js`, `GameManager.js`; new `Room.js`, `tests/fixtures/players.js`.
+**Work in:** `<project-root>/server/game/Game.js` and `<project-root>/server/game/GameManager.js`; new `<project-root>/server/game/Room.js` and `<project-root>/tests/fixtures/players.js`.
 
 1. Create two fixed test users, Alice and Bob, with different IDs.
 2. Give Room the invite code, host ID, settings, and at most two members. Give Game the state of one round between those members.
 3. Use separate room and match IDs. A rematch gets a new match ID. `hostId` is Alice's user ID, not a socket ID or room code.
-4. Replace unclear positional arguments with named options. Update the smoke script and tests at the same time. Supply test data through fixtures instead of a `mockGame` rule bypass.
+4. Replace unclear positional arguments with named options. Update the smoke script and tests at the same time. Supply test data through fixtures under `<project-root>/tests/fixtures/` instead of a `mockGame` rule bypass.
 
 **Check:** the host is a member; a different second player can join; the same user cannot occupy both seats; a third player is rejected.
 
@@ -99,12 +137,12 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 5: implement chain and guess rules
 
-**Work in:** new `public/js/shared/rules.js`, `server/rules.js`, `tests/fixtures/chains.js`, rule tests.
+**Work in:** new `<project-root>/public/js/shared/rules.js`, `<project-root>/server/rules.js`, `<project-root>/tests/fixtures/chains.js`, and rule tests under `<project-root>/tests/unit/`.
 
 1. Read [the game rules](gamerules.md) now. Five words means the first is revealed and four must be guessed in order.
 2. Give Alice and Bob separate test chains. Alice solves Bob's chain, and Bob solves Alice's.
 3. Implement case-insensitive comparison, trimming, format checks, and draft versus Ready status. Do not treat an unknown phrase as automatically banned.
-4. Use one normalization function on server and browser. Only public rules/constants go in the shared file; private answer data stays server-side.
+4. Use one normalization function on server and browser. Only public rules/constants go in `<project-root>/public/js/shared/rules.js`; private answer data stays in server-only modules under `<project-root>/server/` and must never be placed under `<project-root>/public/`.
 
 **Check:** correct guess advances once; incorrect guess does not; skipping is rejected; four correct guesses complete the chain. Test empty and invalid input.
 
@@ -112,7 +150,7 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 6: play a complete round in the terminal
 
-**Work in:** `Game.js`, `Room.js`, manager, smoke script; new `clock.js`, `scheduler.js`, `serializers.js`, lifecycle tests.
+**Work in:** `<project-root>/server/game/Game.js`, `<project-root>/server/game/Room.js`, `<project-root>/server/game/GameManager.js`, and `<project-root>/scripts/smoke-game.js`; new `<project-root>/server/game/clock.js`, `<project-root>/server/game/scheduler.js`, `<project-root>/server/game/serializers.js`, and lifecycle tests under `<project-root>/tests/unit/`.
 
 1. Add selection, lock-in, countdown, playing, and finished states. No selection timer before the second player joins.
 2. Add the 60-second selection period, automatic eligible selection, and 10-second countdown. Locking fixes a copy of that chain version.
@@ -120,13 +158,13 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 4. Pass in a controllable clock so tests advance time instantly. Cancel stale timers.
 5. Build a separate safe view for each player: their solved words and opponent progress, without hidden answers.
 
-**Check:** the smoke script completes a two-player round. Unit tests cover timeout, tie, wrong phase, simultaneous finish, and hidden-answer protection.
+**Check:** `<project-root>/scripts/smoke-game.js` completes a two-player round. Unit tests cover timeout, tie, wrong phase, simultaneous finish, and hidden-answer protection.
 
 **Use here:** [state transitions](architecture.md#5-state-machine-and-concurrency). Implement its rows in order; use the [test matrix](testing-and-operations.md#4-required-behavior-matrix) to check boundary cases.
 
 ## Step 7: build the browser screens with sample data
 
-**Work in:** existing `app.js`, `screens.js`, `homeDom.js`, list/DOM/CSS files; add practice, editor, lobby, game, and result views as needed.
+**Work in:** browser code under `<project-root>/public/`: existing `<project-root>/public/js/app.js`, `<project-root>/public/js/screens.js`, `<project-root>/public/js/homeDom.js`, and the existing list/DOM/CSS files in `<project-root>/public/`; add practice, editor, lobby, game, and result view files under `<project-root>/public/js/` as needed.
 
 1. Register the home renderer. Build a labeled practice game with a deliberately public sample chain.
 2. Build the chain editor/library and waiting, selection, match, and results views using sample state.
@@ -139,12 +177,12 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 8: let the local server recognize Alice and Bob
 
-**Work in:** new `server/auth/devIdentity.js`, `server/repositories/memory.js`, `server/config.js`, fixture factory, `public/js/auth.js`.
+**Work in:** new `<project-root>/server/auth/devIdentity.js`, `<project-root>/server/repositories/memory.js`, `<project-root>/server/config.js`, a fixture factory under `<project-root>/tests/fixtures/`, and `<project-root>/public/js/auth.js`.
 
 1. Add a development-only choice of Alice or Bob. The server issues a random session token and maps it to that test user.
 2. Load their separately owned chains into the running server's memory. A seed script in another Node process cannot change these maps.
 3. Require an owned Ready chain for both creating and joining a room.
-4. Restrict this test login to loopback development. It must not work online. Add ignored local/test environment files and an example without secrets.
+4. Restrict this test login to loopback development. It must not work online. Add ignored local/test environment files at `<project-root>/` and a non-secret example environment file at `<project-root>/`.
 
 **Check:** each session sees only its own chains; a submitted fake user ID cannot change its identity.
 
@@ -152,7 +190,7 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 9: connect the browser to the server
 
-**Work in:** `server.js`; new `server/app.js`, HTTP/socket handlers, `services/gameService.js`, `public/js/api.js`, `socket.js`.
+**Work in:** `<project-root>/server/server.js`; new `<project-root>/server/app.js`; HTTP handlers under `<project-root>/server/routes/`; Socket.IO handlers under `<project-root>/server/socket/`; `<project-root>/server/services/gameService.js`; `<project-root>/public/js/api.js`; and `<project-root>/public/js/socket.js`.
 
 1. Separate Express app creation from listening. Attach Socket.IO to the same HTTP server and install its matching test client.
 2. Authenticate the connection before enabling create/join. The server takes `hostId` from the session; the browser sends settings, not an authoritative host ID.
@@ -165,7 +203,7 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 10: play from two local browser sessions
 
-**Work in:** the browser views, store, API, and socket connection.
+**Work in:** browser files under `<project-root>/public/js/`: the view modules, store module, `<project-root>/public/js/api.js`, and `<project-root>/public/js/socket.js`.
 
 1. Open two separate browser profiles or normal/private sessions. Choose Alice in one and Bob in the other.
 2. Create a room, share its code, join, select chains, lock, and play through results.
@@ -178,7 +216,7 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 11: handle refreshes, disconnects, and retries
 
-**Work in:** game service, scheduler, socket/session registry, store, reconnect UI.
+**Work in:** `<project-root>/server/services/gameService.js`; `<project-root>/server/game/scheduler.js`; socket/session registry modules under `<project-root>/server/socket/`; and browser store/reconnect UI modules under `<project-root>/public/js/`.
 
 1. Restore the current authorized state on reconnect, rather than assuming every socket message arrived.
 2. Implement the chosen disconnect grace, explicit-leave, both-disconnected, and multiple-tab policies.
@@ -191,7 +229,7 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 12: automate the local player journey
 
-**Work in:** new `playwright.config.js`, `tests/e2e/`, test-server helper, CI workflow.
+**Work in:** new `<project-root>/playwright.config.js`, end-to-end tests under `<project-root>/tests/e2e/`, a test-server helper under `<project-root>/tests/helpers/`, and the CI workflow under `<project-root>/.github/workflows/`.
 
 1. Add Playwright and its browsers. Give tests their own server/port and resettable data.
 2. Automate two isolated browser contexts completing a match, plus refresh, invalid invite, and failed-request cases.
@@ -203,7 +241,7 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 13: replace test identities with real accounts
 
-**Work in:** Supabase migrations/config, server auth/account service, browser auth views and SDK bundle.
+**Work in:** Supabase migrations/config under `<project-root>/supabase/`; server auth code under `<project-root>/server/auth/`; account-service code under `<project-root>/server/services/`; browser auth views and SDK integration under `<project-root>/public/js/`.
 
 1. Create local Supabase or a separate development project. Define the schema and permissions before storing real users' chains.
 2. Add signup, confirmation, login, logout, password reset, and profile creation.
@@ -216,7 +254,7 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 14: save private chains permanently
 
-**Work in:** Supabase repository, chain service, library/editor, database tests.
+**Work in:** the Supabase repository module under `<project-root>/server/repositories/`; the chain service under `<project-root>/server/services/`; browser library/editor modules under `<project-root>/public/js/`; and database tests under `<project-root>/tests/db/`.
 
 1. Replace memory-only chain storage with owned database records.
 2. Support create/edit/archive, incomplete drafts, and Ready status. Each edit creates an immutable version; preserve IDs and detect concurrent edits.
@@ -228,7 +266,7 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 15: record results and recover from failures
 
-**Work in:** result service, match database functions, results/profile views, recovery tests.
+**Work in:** result-service code under `<project-root>/server/services/`; match database/repository code under `<project-root>/server/repositories/`; results/profile views under `<project-root>/public/js/`; recovery tests under `<project-root>/tests/` in the appropriate unit/integration/database suite.
 
 1. Save both participants and locked evidence before competitive play begins.
 2. Record both outcomes together, once. Show pending versus recorded status accurately; derive records from finalized matches.
@@ -240,7 +278,7 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 16: add reporting and admin review
 
-**Work in:** report/decision migrations, moderation service/routes, results/admin views, protected admin setup.
+**Work in:** report/decision migrations under `<project-root>/supabase/`; moderation service code under `<project-root>/server/services/`; moderation HTTP routes under `<project-root>/server/routes/`; results/admin views under `<project-root>/public/js/`; and protected admin configuration under `<project-root>/server/`.
 
 1. Allow participants to report their completed match using the server's preserved chain evidence.
 2. Give authorized admins a review queue, decisions, reasons, and audited reversals. Report counts alone do not ban anything.
@@ -252,7 +290,7 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 17: check the whole game before deployment
 
-**Work in:** existing code, security/config, tests, account/support documentation.
+**Work in:** existing server/security/config code under `<project-root>/server/`, browser code under `<project-root>/public/`, tests under `<project-root>/tests/`, and account/support documentation stored at `<project-root>/docs/` (create that directory here if it does not already exist).
 
 1. Finish rate limits, payload limits, safe text rendering, origin checks, and private-log protection. Ensure online startup rejects fixture login and memory-only persistence.
 2. Test keyboard/mobile use, useful error states, refreshes, account deletion/revocation, and long allowed content. Finalize proposed rules with the owner and update player instructions.
@@ -264,7 +302,7 @@ Use `path.join(serverDirectory, '../public')` in the existing static-file setup.
 
 ## Step 18: deploy, verify remote play, and maintain it
 
-**Work in:** hosting/environment configuration, deployment workflow, setup README.
+**Work in:** hosting/environment configuration at `<project-root>/` and/or the chosen host's configuration files, deployment workflow under `<project-root>/.github/workflows/`, and `<project-root>/README.md` for setup/deployment documentation.
 
 1. Choose budget/provider/domain and a host that supports a persistent Node process and WebSockets. Start with one game-server instance and separate staging data.
 2. Configure HTTPS, auth redirects/email, secrets, migrations, health checks, and the supported runtime. Build and deploy from a clean checkout.
