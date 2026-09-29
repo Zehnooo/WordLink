@@ -28,11 +28,12 @@ export default class RoomManager {
         const room = r.room;
         const rp = room.roomPlayers.indexOf(room.roomPlayers.find(p => p.id === player.id));
         if (rp === -1) { return { success: false, message: `Can't find player ${player.id} in room ${r.id}` }; }
-        console.log(room.isHost(player.id));
+
         if (room.isHost(player.id) === true) {
             newHost = room.roomPlayers[rp === 0 ? 1 : 0];
             newHost === undefined ? room.setHost(null) : room.setHost(newHost.id);
         }
+        room.roomPlayers.splice(rp, 1);
         return { success: true, message: `Player left room ${room.id}.`, newHost: newHost ?? null }
     }
     getRoom(code){
