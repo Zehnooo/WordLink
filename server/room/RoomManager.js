@@ -13,11 +13,11 @@ export default class RoomManager {
         const r = this.getRoom(code);
         if (!r.success) { return { success: false, message: r.message } }
         const room = r.room;
-        if (room.roomPlayers.some(p => p.id === player.id) ) { return { success: false, message: `Error: Player has already joined room ${room.id}` } }
+        if (room.getPlayers().some(p => p.id === player.id) ) { return { success: false, message: `Error: Player has already joined room ${room.id}` } }
         switch(room.getPlayerCount()){
             case 2: return { success: false, message: `Error: Room is full.` };
-            case 1: room.roomPlayers.push(player); break;
-            case 0: room.setHost(player.id); room.roomPlayers.push(player); break;
+            case 1: room.addPlayer(player); break;
+            case 0: room.setHost(player.id); room.addPlayer(player); break;
         }
         return { success: true, message: `Success: Joined room ${room.id}`, room }
     }
@@ -26,14 +26,14 @@ export default class RoomManager {
         const r = this.getRoom(code);
         if (!r.success) { return { success: false, message: r.message }; }
         const room = r.room;
-        const rp = room.roomPlayers.indexOf(room.roomPlayers.find(p => p.id === player.id));
-        if (rp === -1) { return { success: false, message: `Can't find player ${player.id} in room ${room.id}` }; }
-        const removedIndex = room.removePlayer(player.id);
+
+        const removedIdx = room.removePlayer(player.id);
+        if (removedIdx === -1) { return { success: false, message: `Could not find Player ${player.username} in Room ${code}.` }; }
         if (room.isHost(player.id) === true) {
-            newHost = room.roomPlayers[removedIndex === 0 ? 1 : 0];
+            newHost = room.roomPlayers[0];
             newHost === undefined ? room.setHost(null) : room.setHost(newHost.id);
         }
-        return { success: true, message: `Player left room ${room.id}.`, newHost: newHost ?? null }
+        return { success: true, message: `Player ${player.username} left room ${room.id}.`, newHost: newHost.username ?? null }
     }
     getRoom(code){
         const room = this.#rooms.get(code);
@@ -42,10 +42,15 @@ export default class RoomManager {
     }
 
     #generateUniqueCode(){
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let code = '';
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        for (let i = 0; i < 5; i++) { code += characters[Math.floor(Math.random() * characters.length)]; }
-        while (this.#rooms.has(code)) { code = ''; this.#generateUniqueCode(); }
+        do {
+            code = '';
+            for (let i = 0; i < 5; i++) {
+                code += chars[Math.floor(Math.random() * chars.length)];
+            }
+        }
+        while (this.#rooms.has(code));
         return code;
     }
 }
