@@ -13,6 +13,7 @@ export default class RoomManager {
         const r = this.getRoom(code);
         if (!r.success) { return { success: false, message: r.message } }
         const room = r.room;
+        if (!room.isOpen) { return { success: false, message: `Error: Room ${room.id} is not open.` }; }
         if (room.getPlayers().some(p => p.id === player.id) ) { return { success: false, message: `Error: Player has already joined room ${room.id}` } }
         switch(room.getPlayerCount()){
             case 2: return { success: false, message: `Error: Room is full.` };
@@ -30,10 +31,10 @@ export default class RoomManager {
         const removedIdx = room.removePlayer(player.id);
         if (removedIdx === -1) { return { success: false, message: `Could not find Player ${player.username} in Room ${code}.` }; }
         if (room.isHost(player.id) === true) {
-            newHost = room.roomPlayers[0];
+            newHost = room.getPlayers()[0];
             newHost === undefined ? room.setHost(null) : room.setHost(newHost.id);
         }
-        return { success: true, message: `Player ${player.username} left room ${room.id}.`, newHost: newHost.username ?? null }
+        return { success: true, message: `Player ${player.username} left room ${room.id}.`, newHost: newHost?.username ?? null }
     }
     getRoom(code){
         const room = this.#rooms.get(code);
