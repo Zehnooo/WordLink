@@ -15,7 +15,7 @@ export default class Game {
         this.gameDuration = gameDuration; // seconds
         this.phase = PHASES.PRE_GAME;
         this.stamps = {
-            [PHASES.PRE_GAME]: { start: Date.now(), },
+            [PHASES.PRE_GAME]: { start: this.createdAt, },
             [PHASES.LIVE_GAME]: {},
             [PHASES.END_GAME]: {}
         }
