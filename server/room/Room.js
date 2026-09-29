@@ -1,22 +1,25 @@
 export default class Room {
+    #roomPlayers = [];
     constructor(roomCode){
         this.id = crypto.randomUUID();
+        this.createdAt = Date.now();
+        this.closedAt = null;
         this.roomCode = roomCode;
-        this.roomPlayers = [];
         this.hostId = null;
-        this.linkedGameId = null;
+        this.linkedGame = {};
     }
     getCode() { return this.roomCode; }
     getHostId() { return this.hostId; }
-    getPlayerCount() { return this.roomPlayers.length; }
-    getPlayers() { return this.roomPlayers; }
-    setLinkedGame(gameId) { this.linkedGameId = gameId; }
+    getPlayerCount() { return this.#roomPlayers.length; }
+    getPlayers() { return [...this.#roomPlayers]; }
+    setLinkedGame(game) { this.linkedGame = game; }
     isHost(playerId) { return this.hostId === playerId; }
     setHost(playerId) { this.hostId = playerId; }
-    addPlayer(player) { this.roomPlayers.push(player); }
+    addPlayer(player) { this.#roomPlayers.push(player); }
     removePlayer(playerId) {
-        const p = this.roomPlayers.indexOf(this.roomPlayers.find(p => p.id === playerId));
-        this.roomPlayers.splice(p, 1);
-        return p;
+        const idx = this.#roomPlayers.findIndex(p => p.id === playerId);
+        if (idx === -1) return -1;
+        this.#roomPlayers.splice(idx, 1);
+        return idx;
     }
 }
