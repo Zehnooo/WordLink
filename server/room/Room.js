@@ -1,15 +1,15 @@
 export default class Room {
     #roomPlayers = [];
-    constructor(roomCode){
+    constructor(code){
         this.id = crypto.randomUUID();
         this.createdAt = Date.now();
         this.closedAt = null;
-        this.roomCode = roomCode;
+        this.code = code;
         this.hostId = null;
         this.linkedGame = null;
         this.isOpen = true;
     }
-    getCode() { return this.roomCode; }
+    getCode() { return this.code; }
     getHostId() { return this.hostId; }
     getPlayerCount() { return this.#roomPlayers.length; }
     getPlayers() { return [...this.#roomPlayers]; }
