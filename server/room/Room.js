@@ -13,5 +13,10 @@ export default class Room {
     setLinkedGame(gameId) { this.linkedGameId = gameId; }
     isHost(playerId) { return this.hostId === playerId; }
     setHost(playerId) { this.hostId = playerId; }
-
+    addPlayer(player) { this.roomPlayers.push(player); }
+    removePlayer(playerId) {
+        const p = this.roomPlayers.indexOf(this.roomPlayers.find(p => p.id === playerId));
+        this.roomPlayers.splice(p, 1);
+        return p;
+    }
 }
