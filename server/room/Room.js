@@ -6,7 +6,8 @@ export default class Room {
         this.closedAt = null;
         this.roomCode = roomCode;
         this.hostId = null;
-        this.linkedGame = {};
+        this.linkedGame = null;
+        this.isOpen = true;
     }
     getCode() { return this.roomCode; }
     getHostId() { return this.hostId; }
@@ -21,5 +22,11 @@ export default class Room {
         if (idx === -1) return -1;
         this.#roomPlayers.splice(idx, 1);
         return idx;
+    }
+    close(){
+        if (this.isOpen === false) { return { success: false, message: `Room ${this.id} is already closed` }; }
+        this.closedAt = Date.now();
+        this.isOpen = false;
+        return { success: true, message: `Room ${this.id} has been closed.` };
     }
 }
