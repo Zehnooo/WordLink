@@ -3,8 +3,8 @@ import Game from './Game.js';
 export default class GameManager {
     #games = new Map();
 
-    createGame(players = [],  gameDuration) {
-        const game = new Game(players, gameDuration);
+    createGame(roomId, players = [],  gameDuration) {
+        const game = new Game(roomId, players, gameDuration);
         this.#games.set(game.id, game);
         return game;
     }
