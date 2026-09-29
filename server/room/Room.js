@@ -6,14 +6,14 @@ export default class Room {
         this.closedAt = null;
         this.code = code;
         this.hostId = null;
-        this.linkedGame = null;
+        this.linkedGameId = null;
         this.isOpen = true;
     }
     getCode() { return this.code; }
     getHostId() { return this.hostId; }
     getPlayerCount() { return this.#roomPlayers.length; }
     getPlayers() { return [...this.#roomPlayers]; }
-    setLinkedGame(game) { this.linkedGame = game; }
+    setLinkedGame(gameId) { this.linkedGameId = gameId; }
     isHost(playerId) { return this.hostId === playerId; }
     setHost(playerId) { this.hostId = playerId; }
     addPlayer(player) { this.#roomPlayers.push(player); }
