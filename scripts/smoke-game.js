@@ -22,13 +22,27 @@ const game1 = gm.createGame(players, 120);
  */
 
 const rm = new RoomManager();
-const roomA = rm.createRoom();
-const attemptJoin = rm.joinRoom(roomA.roomCode, bob);
-const attemptJoin2 = rm.joinRoom(roomA.roomCode, bob);
+const gm = new GameManager();
 
-const attemptJoin4 = rm.joinRoom(roomA.roomCode, jeff);
-const attemptLeave1 = rm.leaveRoom(roomA.roomCode, bob);
+const activeRooms = {};
+for (let i = 0; i < 5; i++){ activeRooms[i] = rm.createRoom(); }
+const room1 = activeRooms[0];
+
+rm.joinRoom(room1.roomCode, bob);
+rm.joinRoom(room1.roomCode, jim);
+
+const game1 = gm.createGame(room1.id, room1.getPlayers(), 120);
+
+setTimeout(() => {
+    const attemptStart = game1.startGame();
+    console.log(attemptStart);
+    console.log('first game', game1);
+}, 3000);
 
 
+setTimeout(() => {
+    const attemptEnd = game1.endGame();
+    console.log(attemptEnd);
+    console.log('first game', game1);
+}, 6000);
 
-console.log('Leave 1', attemptLeave1);
