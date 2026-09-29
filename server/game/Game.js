@@ -5,13 +5,14 @@ const PHASES = Object.freeze({
 });
 
 export default class Game {
-    constructor(roomId, roomPlayers, gameDuration){
+    #players = [];
+    constructor(roomId, players, gameDuration){
         this.id = crypto.randomUUID();
         this.roomId = roomId;
         this.createdAt = Date.now();
         this.startedAt = null;
         this.endedAt = null;
-        this.roomPlayers = roomPlayers;
+        this.#players = [...players];
         this.gameDuration = gameDuration; // seconds
         this.phase = PHASES.PRE_GAME;
         this.stamps = {
@@ -38,7 +39,7 @@ export default class Game {
         this.stamps[PHASES.END_GAME].start = now;
         return { success: true, message: `Ended Game: ${this.id}.` };
     }
-    getPlayers() { return this.roomPlayers; }
+    getPlayers() { return [...this.#players]; }
     getPhase() { return this.phase; }
     getDuration() { return this.gameDuration; }
 }
