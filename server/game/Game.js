@@ -20,6 +20,7 @@ export default class Game {
             [PHASES.LIVE_GAME]: {},
             [PHASES.END_GAME]: {}
         }
+        this.results = null;
     }
     startGame() {
         if (this.phase !== PHASES.PRE_GAME) { return { success: false, message: `Cannot start a game from phase ${this.phase}` }; }
