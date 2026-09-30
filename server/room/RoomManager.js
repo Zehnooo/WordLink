@@ -2,15 +2,17 @@ import Room from './Room.js';
 
 export default class RoomManager {
     #rooms = new Map();
+    #roomCodes = new Map();
 
     createRoom(){
         const code = this.#generateUniqueCode();
         const room = new Room(code);
-        this.#rooms.set(code, room);
+        this.#rooms.set(room.id, room);
+        this.#roomCodes.set(room.code, room.id);
         return room;
     }
     joinRoom(code, player) {
-        const r = this.getRoom(code);
+        const r = this.getRoomByCode(code);
         if (!r.success) { return { success: false, message: r.message } }
         const room = r.room;
         if (!room.isOpen) { return { success: false, message: `Error: Room ${room.id} is not open.` }; }
@@ -20,11 +22,11 @@ export default class RoomManager {
             case 1: room.addPlayer(player); break;
             case 0: room.setHost(player.id); room.addPlayer(player); break;
         }
-        return { success: true, message: `Success: Joined room ${room.id}`, room }
+        return { success: true, message: `Success: Joined room ${room.id}`, room };
     }
     leaveRoom(code, player){
         let newHost;
-        const r = this.getRoom(code);
+        const r = this.getRoomByCode(code);
         if (!r.success) { return { success: false, message: r.message }; }
         const room = r.room;
 
@@ -36,10 +38,15 @@ export default class RoomManager {
         }
         return { success: true, message: `Player ${player.username} left room ${room.id}.`, newHost: newHost?.username ?? null }
     }
-    getRoom(code){
-        const room = this.#rooms.get(code);
-        if (!room) { return { success: false, message: `Error: Room not found with code ${code}.` }; }
-        return { success: true, message: `Success: Room found with ${code}`, room }
+    getRoom(id){
+        const room = this.#rooms.get(id);
+        if (!room) { return { success: false, message: `Error: Room not found with code ${id}.` }; }
+        return { success: true, message: `Success: Room found with ${id}`, room }
+    }
+    getRoomByCode(code){
+        const roomId = this.#roomCodes.get(code);
+        if (!roomId) { return { success: false, message: `Error: No room ID found using code ${code}.` }; }
+        return this.getRoom(roomId);
     }
 
     #generateUniqueCode(){
