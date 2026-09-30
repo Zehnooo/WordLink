@@ -40,8 +40,8 @@ export default class RoomManager {
     }
     getRoom(id){
         const room = this.#rooms.get(id);
-        if (!room) { return { success: false, message: `Error: Room not found with code ${id}.` }; }
-        return { success: true, message: `Success: Room found with ${id}`, room }
+        if (!room) { return { success: false, message: `Error: Room not found with id ${id}.` }; }
+        return { success: true, message: `Success: Room found with id ${id}`, room }
     }
     getRoomByCode(code){
         const roomId = this.#roomCodes.get(code);
@@ -58,7 +58,7 @@ export default class RoomManager {
                 code += chars[Math.floor(Math.random() * chars.length)];
             }
         }
-        while (this.#rooms.has(code));
+        while (this.#roomCodes.has(code));
         return code;
     }
 }
