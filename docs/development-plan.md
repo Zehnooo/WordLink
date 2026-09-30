@@ -1,6 +1,6 @@
 # WordLink development plan
 
-Last reviewed against local `main` at commit `360cdb0` on 2026-09-29.
+Last reviewed against GitHub `main` at commit `d66ee02` on 2026-09-30.
 
 ## How to use this file
 
@@ -16,30 +16,32 @@ The current task is **Step 2: stabilize and test the room/game foundation**.
 
 - The project uses ES modules through `"type": "module"`.
 - `server/server.js` uses ES-module imports, serves only `public/`, and provides `/health`.
-- The server was started directly with Node during this review, and `/health` returned `{"status":"ok"}`.
+- The server was started directly with Node during the original foundation review, and `/health` returned `{"status":"ok"}`.
 - Browser code no longer imports server-only classes.
 - `Room` and `RoomManager` exist under `server/room/`.
-- Rooms receive an ID and five-character code and track creation/closure time, host, players, linked game, and open status.
+- Rooms receive an internal UUID and a five-character public join code and track creation/closure time, host, players, linked game ID, and open status.
+- `RoomManager` now indexes rooms by internal room ID and keeps a separate room-code → room-ID lookup map. Room-code collision checks use the code map.
 - Room joining currently handles the first player as host, a second player, duplicate joins, missing rooms, closed rooms, and a two-player capacity.
 - Room leaving removes a player and reports a missing player.
 - `Game` and `GameManager` exist under `server/game/`.
-- Games receive an ID, room ID, copied player array, duration, timestamps, and basic pre-game/live-game/end-game transitions.
-- `scripts/smoke-game.js` runs and exercises room creation, joining, duplicate joins, leaving, and game creation.
+- Games receive an ID, room ID, copied player array, duration, timestamps, basic pre-game/live-game/end-game transitions, and a `results` placeholder.
+- `scripts/smoke-game.js` now demonstrates one room with two joined players, game creation, manual room ↔ game linking, start, and end.
 - The browser has a screen/navigation shell, mock chain-list rendering, a home-view stub, and the refined dark-violet theme.
 
 ### Partially implemented or currently incorrect
 
-- The smoke script is exploratory output, not an automated test. It removes players and then creates a game from the emptied room, and it does not assert the created game's state.
+- The smoke script is still a demonstration rather than an automated test. It uses real timers, prints full objects, and does not assert expected state.
 - `npm test` is still a failing placeholder. There is no tracked `tests/` directory.
-- The local `npm` launcher is broken before it reaches this project: it points to a missing global `npm-cli.js`. Direct `node` commands work. Repair/reinstall the local Node/npm tooling before a step requires package installation or npm scripts.
-- When a host leaves, `RoomManager` currently promotes the remaining player. The confirmed pre-game rule says the host leaving closes the room and removes the remaining player. There is no host transfer in v1.
-- `Room.close()` exists, but leaving does not use it and closed rooms remain stored indefinitely.
-- `Room.linkedGame` can be set, but game creation does not currently link the room and game in either direction through one coordinated operation.
-- A game can be created with zero or one player, an invalid duration, or an unknown room.
-- Room codes use unbounded `Math.random()` retries and cannot be made deterministic for collision tests.
-- `Game` uses `Date.now()` directly, so timer-boundary tests cannot control time.
-- The current three phases do not yet represent selection, lock-in, countdown, gameplay, and results.
-- No chain format validation, chain snapshot, guessing, score, winner, timeout, draw, or safe player-specific state exists.
+- The local `npm` launcher was previously broken before it reached this project; verify `npm --version` before relying on npm scripts. Direct `node` commands were known to work.
+- When a host leaves, `RoomManager` currently promotes the remaining player. The confirmed pre-game rule says the host leaving closes the room and removes/releases the remaining player. There is no host transfer in v1.
+- `Room.close()` exists, but host-leave behavior does not use it and closed rooms remain stored indefinitely.
+- `Room.linkedGameId` can be set, but game creation and room linking are still two separate caller actions instead of one coordinated operation.
+- A game can still be created with zero or one player, duplicate players, an invalid duration, or an unknown room.
+- Room codes still use unbounded `Math.random()` retries and generation cannot yet be made deterministic for collision tests.
+- `Room` and `Game` still call UUID/time functions directly, so deterministic ID and timer tests are not yet supported.
+- The chosen architecture now defines list selection and irreversible lock-in as **Room/lobby responsibilities**. `Room` does not yet store per-player selected-list/lock state.
+- A `Game` should be created only after both room players are locked in. It must receive two game-participant snapshots containing player identity plus immutable copies of the locked lists. That boundary is not implemented yet.
+- No chain format validation, immutable chain snapshot enforcement, countdown, guessing, score/progress, winner, timeout, draw, or safe player-specific state exists yet.
 - The home renderer is not registered in `screens.js`; practice is only a stub.
 - `List` creates new IDs while hydrating data and lets the browser set `verified`; neither behavior can be trusted for multiplayer eligibility.
 - A failed `loadData()` can return `undefined`, while chain-list rendering immediately calls `forEach`.
@@ -101,7 +103,7 @@ Do not add sockets, accounts, or a database during this step. The goal is a depe
 - Let tests inject ID, room-code, and clock functions while production defaults use Node crypto/current time.
 - Generate room codes with bounded retries. Test collision-then-success and repeated-collision failure.
 - Validate that a game belongs to a real room, has exactly two distinct players, and uses an allowed duration.
-- Coordinate game creation in one place: create the game, register it, and set the room's linked game. A partial failure must not leave only one side linked.
+- Coordinate basic game creation in one place: create the game, register it, and set the room's linked game. A partial failure must not leave only one side linked. Step 3 will add the stronger rule that this operation is allowed only after both room players have locked lists.
 - Return copies of player arrays so callers cannot mutate private room/game membership.
 
 ### Step 2 automated checks
@@ -121,24 +123,55 @@ Do not add sockets, accounts, or a database during this step. The goal is a depe
 
 ---
 
-## Step 3 — NEXT: implement chain rules and a complete terminal game
+## Step 3 — NEXT: implement lobby list lock-in and a complete terminal game
 
-Start only after Step 2 passes. This step turns the room/game shell into the actual WordLink rules engine.
+Start only after Step 2 passes. This step turns the room/game shell into the actual WordLink rules engine while preserving a clear boundary: **Room owns lobby readiness; Game owns the match after both players are ready.**
 
-**Work in:** `server/game/`, new `server/rules.js`, `tests/fixtures/chains.js`, and unit tests. Put only reusable non-secret formatting helpers in `public/js/shared/rules.js` if the browser also needs them.
+**Work in:** `server/room/`, `server/game/`, new `server/rules.js`, `tests/fixtures/chains.js`, and unit tests. Put only reusable non-secret formatting helpers in `public/js/shared/rules.js` if the browser also needs them.
+
+### 3A. Add room/lobby list selection and lock-in
 
 - Read `docs/gamerules.md` before implementing this step.
-- Represent a chain as an immutable five-word snapshot owned by one player.
-- Normalize guesses by trimming and comparing case-insensitively. Decide and document the allowed character/length rules before coding validation.
-- Distinguish Draft, Ready, and Blocked. Unknown connections remain playable; the browser cannot mark its own chain eligible.
-- Let each player select their own chain while solving the opponent's chain.
-- Implement selection, irreversible lock-in, 60-second auto-selection, 10-second countdown, gameplay, and results states.
-- Reveal only the opponent's first word initially. Require four correct guesses in order; incorrect guesses do not advance.
-- Implement timed completion/tie and unlimited agreed draw according to the rules.
-- Inject a controllable clock/scheduler so tests advance deadlines without waiting.
-- Produce a separate safe state for each player. Never serialize the unsolved opponent words before results.
+- Keep `Room` responsible for waiting/joining, each player's current list selection, irreversible lock-in, and whether both players are ready.
+- Do **not** create a `Game` when the second player merely joins. The room remains a lobby while either player still needs to select/lock a list.
+- Represent each current room selection by player ID. At this stage a plain room-participant/selection object is enough; do not introduce a `Player` or `GameParticipant` class unless behavior later justifies one.
+- Allow a player to change their selected list before lock-in. Once locked, that player's selection cannot be changed or unlocked.
+- Implement the 60-second selection deadline. If a player has not locked a list by the deadline, automatically choose and lock one of that player's eligible lists according to the documented rule.
+- If the non-host leaves before a game exists, cancel/reset selection timing/state as required and keep the host waiting. If the host leaves, close the room according to the existing room rule.
 
-**Completion check:** the smoke script can play an entire two-player round to a result, and unit tests cover four sequential guesses, incorrect/skip attempts, timeout/tie, draw, invalid phases, stale timers, one terminal result, and hidden-answer protection.
+### 3B. Create the game exactly at the lobby → match boundary
+
+- When and only when both room players are locked in, automatically create the room's game. Do not require a separate host `Start Game` action.
+- Game creation must happen exactly once even if duplicate/stale lock commands arrive.
+- Build exactly two game-participant snapshots from the locked room state. Each snapshot should contain the player's stable ID, display username needed by the match, and an immutable copy of the selected five-word list/chain.
+- The `Game` owns those snapshots from creation onward. The room's selection state is no longer authoritative for an active match. Editing or replacing a saved list later must not alter the active game's copy.
+- Register the `Game` in `GameManager` and set `Room.linkedGameId` as one coordinated operation so one side cannot be linked without the other.
+- Keep the room and game related by IDs rather than storing direct circular object references.
+
+### 3C. Implement the actual match rules
+
+- Treat the 10-second countdown as game/match state after creation, followed by live gameplay and a terminal results state. Conceptual "pre-game" therefore spans room selection plus the game's countdown; it does not all need to live inside `Game`.
+- Represent each selected chain inside the game as an immutable five-word snapshot.
+- Normalize guesses by trimming and comparing case-insensitively. Decide and document the allowed character/length rules before coding validation.
+- Distinguish Draft, Ready, and Blocked chain eligibility. Unknown connections remain playable; the browser cannot mark its own chain eligible.
+- Reveal only the opponent's first word initially. Require four correct guesses in order; incorrect guesses do not advance and users cannot skip ahead.
+- Track each game participant's match-specific progress/score separately from their persistent user identity. Plain internal participant records are sufficient unless methods on participants become useful later.
+- Implement timed completion/tie and unlimited agreed draw according to the rules.
+- Finalize one immutable game result containing enough evidence for the results screen and later persistence (winner/loser or draw, reason, final progress/scores, completion time). Clients never choose the winner.
+- Inject a controllable clock/scheduler so tests advance selection deadlines, countdowns, and game timers without real waiting.
+- Produce a separate safe state for each player. Never serialize the opponent's unsolved words before results.
+
+### Step 3 automated checks
+
+- Lobby selection: both players can select; a selection can change before lock; lock is irreversible; invalid/non-owned/non-Ready selections are rejected.
+- Selection deadline: unlocked players are auto-selected/locked; stale timers cannot modify a changed/closed room.
+- Creation boundary: no game exists before both locks; the second lock creates exactly one game; room and game link to each other by ID.
+- Snapshot safety: the game receives exactly two participant/list snapshots and later mutations to room/source-list objects do not change the game's locked chains.
+- Countdown/gameplay: countdown transitions once into live play; four sequential guesses complete a chain; incorrect/skip attempts do not advance.
+- Results: completion, timed win, timed tie, agreed draw, invalid phases, stale timers, and duplicate finalization all produce one deterministic terminal result.
+- Hidden-answer protection: each player's safe state reveals only information they are allowed to know until the game ends.
+
+**Completion check:** the smoke script can demonstrate the full terminal flow `create room → join two players → select → lock → automatic game creation → countdown → guesses/timeout/draw → results`, and all Step 3 unit tests pass without waiting on real timers.
 
 ---
 
@@ -150,7 +183,7 @@ This remains a frontend-only step. Do not connect it to multiplayer yet.
 
 - Register and implement `homeView`.
 - Build a clearly labeled practice game using one intentionally public sample chain.
-- Build chain editor/library, waiting room, selection, countdown, game, and results views using sample state shaped like the safe server state from Step 3.
+- Build chain editor/library, waiting room + list-selection/lock-in, countdown, game, and results views using sample state shaped like the Room/Game boundary and safe server state from Step 3.
 - Preserve supplied list IDs instead of generating new IDs during hydration.
 - Display eligibility status but remove client authority to set `verified`/Ready.
 - Make `loadData` either return validated data or throw/return a structured failure; do not call `forEach` on `undefined`.
@@ -185,7 +218,7 @@ This makes two local browser sessions represent two different players without re
 - Separate Express app creation from listening so tests can start a server on a temporary port.
 - Attach Socket.IO to the same HTTP server that serves Express.
 - Authenticate before enabling room actions.
-- Add create/join, select/lock, guess, draw, leave, and state-sync commands. Route all commands through the already-tested domain/services.
+- Add create/join, room-level select/lock, guess, draw, leave, and state-sync commands. Route all commands through the already-tested domain/services. The second completed lock automatically triggers coordinated game creation; there is no separate host-start command.
 - Include command IDs, acknowledgements, room/match revisions, timeouts, and duplicate protection.
 - Send each client only its player-specific safe state.
 
@@ -197,7 +230,7 @@ This makes two local browser sessions represent two different players without re
 
 **Work in:** browser state/views plus server game/socket services and scheduler.
 
-- Open two isolated browser profiles/sessions and complete create → join → select → lock → countdown → play → results.
+- Open two isolated browser profiles/sessions and complete create → join → select → lock → automatic game creation → countdown → play → results.
 - Implement reconnect/resync after refresh rather than assuming every socket event arrived.
 - Apply the documented host/non-host pre-game departure behavior.
 - Implement live disconnect grace, explicit forfeit, both-disconnected behavior, and one controlling tab per account.
