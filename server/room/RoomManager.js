@@ -12,6 +12,7 @@ export default class RoomManager {
         return room;
     }
     joinRoom(code, player) {
+        if (!player || !player.id) { return { success: false, message: 'Error: Player not recognized. Please try again' }; }
         const r = this.getRoomByCode(code);
         if (!r.success) { return { success: false, message: r.message } }
         const room = r.room;

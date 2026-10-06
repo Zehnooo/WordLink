@@ -22,7 +22,7 @@ export default class Game {
         }
         this.results = null;
     }
-    startGame() {
+    start() {
         if (this.phase !== PHASES.PRE_GAME) { return { success: false, message: `Cannot start a game from phase ${this.phase}` }; }
         const now = Date.now();
         this.phase = PHASES.LIVE_GAME;
@@ -31,7 +31,7 @@ export default class Game {
         this.stamps[PHASES.LIVE_GAME].start = now;
         return { success: true, message: `Started Game: ${this.id}.` };
     }
-    endGame(){
+    end(){
         if (this.phase !== PHASES.LIVE_GAME) { return { success: false, message: `Cannot end a game from phase ${this.phase}` }; }
         const now = Date.now();
         this.phase = PHASES.END_GAME;

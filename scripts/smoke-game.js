@@ -1,27 +1,22 @@
 import GameManager from '../server/game/GameManager.js';
 import RoomManager from '../server/room/RoomManager.js';
+import players from '../tests/fixtures/players.js';
 
 const rm = new RoomManager();
 const gm = new GameManager();
 
 const room1 = rm.createRoom();
 
-rm.joinRoom(room1.code, bob);
-rm.joinRoom(room1.code, jim);
+rm.joinRoom(room1.code, players.bob);
+rm.joinRoom(room1.code, players.alice);
 
-const game1 = gm.createGame(room1.id, room1.getPlayers(), 120);
-room1.setLinkedGame(game1.id);
+const res = gm.createGame(room1.id, room1.getPlayers(), 120);
+const game = res.game;
+room1.setLinkedGame(game.id);
 
-console.log(room1);
-console.log(game1);
+game.start();
+game.end();
 
-setTimeout(() => {
-    game1.startGame();
-}, 2000);
-
-setTimeout(() => {
-    game1.endGame();
-    console.log('End', game1);
-}, 2000);
+console.log('Done', { room: room1, game: game });
 
 
